@@ -1,0 +1,67 @@
+Keywords
+--------
+
+func
+int
+str
+char
+list
+eret
+ret
+printl
+
+HT3
+---
+
+HT3 is a language to make development easier and faster.
+
+-----------------------------------------------------------------------------------------------------------------------------
+    |                                                 ALLSYNTAX                                                         |
+-----------------------------------------------------------------------------------------------------------------------------
+
+                                            HT3 - ALLSYNTAX file includes
+                                                  example usages of
+                                                     functions.
+
+(Recommended column size for editor: 126)
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+    First of all, welcome to ALLSYNTAX file. Let's get introduced to HT3's syntax, then look at some examples.
+
+(Keyword)(%1u)(%%)(%*)
+
+%1u -> Usage of the keyword.
+%% -> Other params.
+%* -> Other...
+
+Example 1:
+                                              (Line [CHT] - Functions)
+
+func main() {
+    printl "Hello, World!";
+}
+
+In this code,
+
+func       -> Keyword
+main       -> Usage of the keyword (Function Name)
+( --- )    -> Other params (Function Params)
+{ <code> } -> Other... (Function code)
+
+Example 2:
+
+                                              (Line [CHT] - Input / Output)
+
+printl "This is a text.";
+
+In this code,
+
+printl            -> Keyword
+"This is a text!" -> Usage of the keyword (Function Name)
+
+// printl doesn't requires ( or ) to make it faster to type, without having mistakes like unclosed param...
+// also since lexer passes white spaces, after ident if string omes it will still work
+// like printl"hi" would work. we keep whitespace to make it more readable
+
