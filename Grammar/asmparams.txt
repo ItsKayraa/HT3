@@ -1,0 +1,7 @@
+1. param	RDI
+2. param	RSI
+3. param	RDX
+4. param	RCX
+5. param	R8
+6. param	R9
+7...:       stack

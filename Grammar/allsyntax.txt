@@ -13,7 +13,7 @@ printl
 HT3
 ---
 
-HT3 is a language to make development easier and faster.
+HT3 is a language that makes development easier and faster.
 
 -----------------------------------------------------------------------------------------------------------------------------
     |                                                 ALLSYNTAX                                                         |
@@ -24,7 +24,7 @@ HT3 is a language to make development easier and faster.
                                                      functions.
 
 (Recommended column size for editor: 126)
-
+(Recommended editor: VS Code)
 
 -----------------------------------------------------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ HT3 is a language to make development easier and faster.
 %* -> Other...
 
 Example 1:
-                                              (Line [CHT] - Functions)
+                                              (Line [179] - Functions)
 
 func main() {
     printl "Hello, World!";
@@ -52,7 +52,7 @@ main       -> Usage of the keyword (Function Name)
 
 Example 2:
 
-                                              (Line [CHT] - Input / Output)
+                                              (Line [454] - Input / Output)
 
 printl "This is a text.";
 
@@ -65,3 +65,494 @@ printl            -> Keyword
 // also since lexer passes white spaces, after ident if string omes it will still work
 // like printl"hi" would work. we keep whitespace to make it more readable
 
+-----------------------------------------------------------------------------------------------------------------------------
+                                                 BASIC KEYWORDS
+-----------------------------------------------------------------------------------------------------------------------------
+
+1. func
+    "func" is a keyword to create functions that could be callable from anywhere in your code.
+    If the name of the functions equals to "main", it will add "call main" to start label (so it will work with main.)
+
+    Example:
+        func greet(str name) {
+            printl "Hello, {}!" name;
+            ret 0;
+        }
+
+        func main() {
+            greet("Someone");
+            eret 0;
+        }
+
+        func something();
+    
+    *Using ret for main will turn your ret into eret.*
+
+2. int
+    Create a integer value in data section.
+
+    Example:
+        int number 5;
+        
+        int number;
+
+3. str
+    Create a string variable in data section.
+
+    Example:
+        str name "Hello, World!"
+
+        str name[15]; // In this, 15 means the lenght of string.
+
+4. char
+    Create a character variable in data section.
+
+    Example:
+        char firstletter 'A'
+
+        char firstletter;
+    
+5. list
+    Create a static list in data section.
+
+    Example:
+        list int nums 1 2 3;
+
+        list int nums;
+
+        list str admins "Kayra" "Alex" "Alice";
+
+        list str admins;
+
+6. eret
+    Make SYS_EXIT with value.
+
+    Example:
+        //
+        func exit(int statuscode) {
+            eret statuscode;
+        }
+
+        func main() {
+            printl "test";
+            exit(0)
+        }
+
+        //
+        func main() {
+            eret 0; // Exit with status code 0
+        }
+
+7. ret
+    Set RDI to return value and ret.
+
+    Example:
+        func greet(str name) {
+            printl "Hello, {}!", name;
+            ret 0;
+        }
+
+        func main() {
+            int exitcode = greet();
+            eret exitcode;
+        }
+
+8. printl
+    Write a text to the console.
+
+    Example:
+        func main() {
+            printl "Hello, World!"
+            eret 0;
+        }
+
+        func main() {
+            str variable "variable";
+            printl "This is a text with {}!" variable;
+            eret 0;
+        }
+
+-----------------------------------------------------------------------------------------------------------------------------
+                                                 DESCRIPTIONS
+-----------------------------------------------------------------------------------------------------------------------------
+
+1: Functions
+
+    Functions are things that helps you to execute lines of code in one line.
+    We use functions to make a specific goal and get it's value, or more.
+    Functions may return list, string, int and etc. So we could make a variable with the return value.
+
+    They have a syntax like this:
+
+    func FunctionName(Params) +={Code..ret Value;}
+
+    func         -> Our keyword.
+    FunctionName -> The name of the function for calling later on.
+    Params       -> Parameters that a function gets and could use.
+    +=...        -> Optional.
+        {
+            Code     -> Code that function will execute.
+            Value    -> Value that function will return.
+        }
+
+    Functions may have usages like this:
+
+        func FunctionName();
+
+        func FunctionName() {
+            Code;
+            ret Value;
+        }
+
+        func FunctionName(Params) {
+            Code;
+            ret Value;
+        }
+
+        func FunctionName(Params);
+
+    When "FunctionName" is set to "main", it will add "call main" into _start label that comes by default.
+    If the "-nsl" arguement is given to the compiler, it will don't add any _start label and will make you do the _start label.
+    If "-nsl" isn't given but _start function is created, it will raise an error.
+
+    To make you able to understand it better, here are some examples of functions:
+        Example 1:
+            func main() {
+                printl "Hello, World!";
+                eret 0;
+            }
+
+            ---------------------------------
+
+            In this code, we must do "eret" instead of "ret" since the function name equals to "main."
+
+            If we set eret to ret, it would change ret to eret compile time.
+
+            You cannot return strings or lists in eret, eret does what SYS_EXIT does.
+
+        Example 2:
+            func greet(str name) {
+                printl "Hello, {}!", name;
+                ret 0;
+            }
+
+            ---------------------------------
+
+            In this code, we use the param that's in function in our code.
+
+            We could call this function from anywhere.
+
+            func main() {
+                greet("Kayra") // Writes to the console: Hello, Kayra!
+                eret 0;
+            }
+
+            Also, we could make the return value of a function a variable.
+
+            func main() {
+                int exit greet("Kayra") // Creates a variable called exit and saves the return value of greet to exit.
+                eret exit; // Exits with making status code the return of greet.
+            }
+    
+
+    [SHORTLY:FUNCTIONS]
+    Functions is a thing that allows us to save code and call that code in one line.
+    Functions allows us to have parameters which we could use it inside the code that function gets.
+    Functions returns a value, we could save this value to a variable.
+
+2: Variables
+    Variables is a thing that helps us to store values in memory.
+    There are many types of variables. These types can be struct, int, str, list and more.
+    When we create a variable, we add a value with the variable name to data section.
+
+    There are differences between syntaxes for variables.
+
+    2.1: int
+        int is a thing that stores integer value inside the data section.
+        
+        Here is the syntax of it:
+            int VariableName +=VariableValue;
+
+            int          -> Our keyword.
+            VariableName -> Name stored inside the data section.
+            +=...: Optional.
+                {
+                    VariableValue -> Value of the variable.
+                }
+
+        int variables may have usages like these:
+            int VariableName VariableValue;
+
+            Create a variable called VariableName, assign VariableValue to it's value.
+
+            int VariableName;
+
+            Create a variable called VariableName.
+        
+        To make you able to understand it better, here are some examples of int variables:
+            Example 1:
+                int number 0;
+
+                ---------------------------------
+
+                This creates a variable called number in the data section and sets it's value to 0.
+
+            Example 2:
+                int number;
+
+                ---------------------------------
+
+                This creates a variable called number in the data section.
+    
+    2.2: str
+        str is a thing that stores string value inside the data section.
+        
+        Here is the syntax of it:
+            str VariableName +=VariableValue;
+
+            str          -> Our keyword.
+            VariableName -> Name stored inside the data section.
+            +=...: Optional.
+                {
+                    VariableValue -> Value of the variable.
+                }
+
+        str variables may have usages like these:
+            str VariableName VariableValue;
+
+            Create a variable called VariableName, assign VariableValue to it's value.
+
+            str VariableName;
+
+            Create a variable called VariableName.
+        
+        To make you able to understand it better, here are some examples of str variables:
+            Example 1:
+                str text "Hello, World!";
+
+                ---------------------------------
+
+                This creates a variable called text in the data section and sets it's value to "Hello, World!".
+
+            Example 2:
+                str text;
+
+                ---------------------------------
+
+                This creates a variable called text in the data section.
+    
+    2.3: list
+        list is a thing that stores static list inside the data section.
+        
+        Here is the syntax of it:
+            list ListType VariableName +=VariableValues;
+
+            list         -> Our keyword.
+            ListType     -> The type of the list.
+            VariableName -> Name stored inside the data section.
+            +=...: Optional.
+                {
+                    VariableValues -> Value of the variable.
+                }
+
+        list variables may have usages like these:
+            list ListType VariableName VariableValues;
+
+            Create a list called VariableName, assign VariableValue to it's value.
+
+            list ListType VariableName;
+
+            Create a list called VariableName.
+        
+        To make you able to understand it better, here are some examples of list variables:
+            Example 1:
+                list str texts "Hello" "World";
+
+                ---------------------------------
+
+                This creates a string list called texts in the data section and adds "Hello" and "World".
+
+            Example 2:
+                list str texts;
+
+                ---------------------------------
+
+                This creates a string list called texts in the data section.
+            Example 3:
+                list int nums 5 7;
+
+                ---------------------------------
+
+                This creates a int list called nums in the data section and adds 5 and 7.
+
+            Example 4:
+                list int nums;
+
+                ---------------------------------
+
+                This creates a int list called nums in the data section.
+            Example 5:
+                list char chars 'A' 'B';
+
+                ---------------------------------
+
+                This creates a char list called chars in the data section and adds 'A' and 'B'.
+
+            Example 6:
+                list char chars;
+
+                ---------------------------------
+
+                This creates a char list called chars in the data section.
+
+3: Status / Exit codes
+    Exit codes are things that allows us to check an output of function or file.
+    We use exit codes to create variables with it's values and more.
+    Exit codes can only be used in functions
+
+    There are 2 ways of giving exit codes:
+        1: eret
+            eret is a thing that allows you to exit the program using SYS_EXIT syscall.
+            when eret is called, you cannot work with that file anymore since it exits.
+
+            It has a syntax like this:
+                eret ExitStatus;
+
+                eret       -> Our keyword
+                ExitStatus -> Exit status when we exit.
+
+            We can see the exit status by typing "echo $?" in bash.
+
+            Most of the time, we set eret to 0 so it would mean the program runned without errors.
+        2: ret
+            ret is a thing that allows you to set value of a function and stop the function.
+            when ret is called, you cannot work with that function anymore since it returns (and stops function.)
+            
+            It has a syntax like this:
+                ret ExitStatus;
+
+                ret       -> Our keyword
+                ExitStatus -> Exit status when we exit.
+            
+            We can set the return value to a variable or print it to see it's value.
+
+            Most of the time, we set ret to 0 so it would mean the program runned without errors.
+            If it's a function for giving you a value other than 0, (like an add function) you must set ret to it's value.
+        
+    Status / Exit codes helps us to debug files or get values of something easier.
+    
+    ret supports these types of returns:
+        1: 
+            list
+        2:
+            str
+        3:
+            int
+        4:
+            char
+
+4: Input / Output
+    Input / Output helps us to use the console subsystem.
+    We can get user input or we can print text to the console using the keywords inside Input / Output.
+
+    Most Input / Output keywords have the same syntax. Let's take a look at them:
+        InputOutputKeyword String +=*
+
+        InputOutputKeyword -> Our keyword.
+        String             -> Our string.
+        +=*                -> Other arguements.
+    
+    Let's take a look at Input / Output keywords:
+        1: printl:
+            printl is a thing that helps us to write text in the console. printl adds newline at end automaticly.
+            
+            Let's take a look at it's syntax:
+                printl String +=*
+
+                printl             -> Our keyword.
+                String             -> Our string.
+                +=*                -> Other arguements. We use other arguements if the string includes {}.
+            
+            Let's take a look at it's usages:
+                printl String;
+                printl StringWithBraces arguements;
+            
+            Let's take a look at it's examples:
+                Example 1:
+                    func main() {
+                        printl "Hello, World!";
+                        eret 0;
+                    }
+
+                    Output:
+                        Hello, World!
+                
+                Example 2:
+                    func main() {
+                        str name "Kayra";
+                        printl "Hello, {}!" name;
+                        eret 0;
+                    }
+
+                    Output:
+                        Hello, Kayra!
+                
+                Example 3:
+                    func greet(str name) {
+                        printl "Hello, {}!" name;
+                        ret 0;
+                    }
+
+                    func main() {
+                        greet("Kayra");
+                        eret 0;
+                    }
+
+                    Output:
+                        Hello, Kayra!
+
+            Weird fact: printl returns you the lenght of the string you write.
+
+            For example:
+                func main() {
+                    int textlen printl "hi";
+                    eret textlen;
+                }
+
+                This would exit with status code 2.
+        
+        2: inputl:
+            inputl is a thing that helps you to get input from user.
+
+            Let's take a look at it's syntax:
+                inputl String saveLoc +=*
+
+                inputl             -> Our keyword.
+                String             -> Our string.
+                saveLoc            -> Place where we save the input from user.
+                +=*                -> Other arguements. We use other arguements if the string includes {}.
+            
+            Let's take a look at it's usages:
+                inputl String saveLoc;
+
+                inputl StringWithBraces saveLoc arguements;
+            
+            Let's take a look at it's examples:
+                Example 1:
+                    func main() {
+                        str name[128];
+                        inputl "What is your name? " name;
+                        eret 0;
+                    }
+
+                    This would ask the user "What's your name? " and get the input from user.
+
+                Example 2:
+                    func main() {
+                        str name[128];
+                        str question "What is your name? ";
+                        inputl "{} " name question;
+                        eret 0;
+                    }
+
+                    This would ask the user the string at question and get the input from user.
