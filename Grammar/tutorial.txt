@@ -16,10 +16,10 @@ HT3
 HT3 is a language that makes development easier and faster.
 
 -----------------------------------------------------------------------------------------------------------------------------
-    |                                                 ALLSYNTAX                                                         |
+    |                                                 TUTORIAL                                                         |
 -----------------------------------------------------------------------------------------------------------------------------
 
-                                            HT3 - ALLSYNTAX file includes
+                                            HT3 - Tutorial file includes
                                                   example usages of
                                                      functions.
 
