@@ -3,23 +3,22 @@ import lexer
 import argparse
 import os
 
+script_path = os.path.abspath(__file__) # for library system prob
+
 def write_asm_file(asm: dict, filename: str):
     with open(filename, "w") as f:
         f.write(asm.get("s.data", "") + "\n")
         f.write(asm.get("s.bss", "") + "\n")
         f.write(asm.get("s.text", "") + "\n")
+        f.write(asm.get("s.after", "") + "\n")
 
         for fname, fdata in asm.get("funcs", {}).items():
-            if isinstance(fdata, str):
-                f.write(f"\n; function {fname}\n")
-                f.write(fdata + "\n")
-            elif isinstance(fdata, dict):
-                f.write(f"\n; function {fdata.get('name', fname)}\n")
-                f.write(fdata.get("content", "") + "\n")
+            f.write(f"\n; function {fdata.get('name', fname)}\n")
+            f.write(fdata.get("content", "") + "\n")
 
 def compile(content, output, noW, L, kt):
     tokens, error, errors = lexer.lmain(content)
-    asmd   = parser.parser(tokens)
+    asmd   = parser.parser(tokens, script_path)
     write_asm_file(asmd, output+".s")
     os.system(f"nasm -felf64 {output+".s"} -o {output+".o"}")
     os.system(f"ld {output+".o"} {L} -o {output}")
