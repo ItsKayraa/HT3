@@ -5,6 +5,7 @@ This module includes the lexer function and the module 'tokens' and 'errors' whi
 import tokens
 import errors
 
+# Backslash things
 def bslh(char: str):
     match char:
         case "n":
