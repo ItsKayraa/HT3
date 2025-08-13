@@ -13,6 +13,7 @@ TYPES         = [
     "float",
     "char",
 ]
+PARAM_REGS    = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"]
 
 # Define token names.
 # -----------------
@@ -30,7 +31,7 @@ T_OPER   = "OPER" #  -> Operators (=*+-/)
 T_DOOPER = "DOOPER" #-> Double Operators (==, *=, **, ++, +=, ...)
 T_DOT    = "DOT" #   -> Dot (.)
 T_DODOT  = "DODOT" # -> Double Dot (..)
-T_DDOT   = "DDOT" #  -> : (Forgo its name)
+T_COLON   = "colon" # -> Colon (:)
 T_SCOPE  = "SCOPE" # -> Scope (::)
 T_COMMA  = "COMMA" # -> Comma (,)
 T_LPRM   = "LPRM" #  -> Left Param ( ( )
@@ -87,5 +88,6 @@ LRToToken = {
     ",": T_COMMA,
     "!": T_UNOT,
     "$": T_DOLLAR,
-    "&": T_AND
+    "&": T_AND,
+    ":": T_COLON
 }
