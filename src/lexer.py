@@ -32,7 +32,8 @@ def bslh(char: str):
 
 def lmain(content: str):
     # The tokens that will be returned
-    result = []
+    result = [[]]
+    cur = 0
     # (TOKENTYPE, TOKENCONTENT) -> Tuple
     errorsh = []
     error = False
@@ -72,7 +73,7 @@ def lmain(content: str):
                         TYP = tokens.T_FLOAT
                 TEMP += c
                 i+=1
-            result.append((TYP, TEMP)) # ("INT"|"FLOAT", {TEMP})
+            result[cur].append((TYP, TEMP)) # ("INT"|"FLOAT", {TEMP})
         
         # Check if the current character is an identifier.
         elif curchar in tokens.ASCII_ALPHA:
@@ -85,7 +86,7 @@ def lmain(content: str):
             ):
                 TEMP += content[i]
                 i += 1
-            result.append((tokens.T_IDENT, TEMP))
+            result[cur].append((tokens.T_IDENT, TEMP))
 
         # String check.
         elif curchar == '"':
@@ -105,7 +106,7 @@ def lmain(content: str):
                 errorsh.append(errors.TokenizerError("Unterminated string literal.", curchar, i, curline, lines[curline]))
                 error = True
             i += 1
-            result.append((TYP, TEMP))
+            result[cur].append((TYP, TEMP))
         
         # ChaST check.
         elif curchar == "'":
@@ -113,29 +114,55 @@ def lmain(content: str):
                 errorsh.append(errors.TokenizerError("Expected closing quote for character literal.", curchar, i, curline, lines[curline]))
                 error = True
             else:
-                result.append((tokens.T_CHAST, content[i+1]))
+                result[cur].append((tokens.T_CHAST, content[i+1]))
             i += 3
+        
+        # Line comment check
+        elif curchar == "#":
+            i += 2
+            comment_text = ""
+            while i < len(content) and content[i] != "\n":
+                comment_text += content[i]
+                i += 1
+            result[cur].append((tokens.T_COMMENT_LINE, comment_text))
+            continue
+
+        # Block comment check
+        elif curchar == "#" and nextchar == "=":
+            i += 2
+            comment_text = ""
+            while i < len(content)-1:
+                if content[i] == "=" and content[i+1] == "#":
+                    i += 2
+                    break
+                comment_text += content[i]
+                i += 1
+            else:
+                errorsh.append(errors.TokenizerError("Unterminated block comment.", curchar, i, curline, lines[curline]))
+                error = True
+            result[cur].append((tokens.T_COMMENT_BLOCK, comment_text))
+            continue
 
         # Operator | Double Operator check
         elif curchar in tokens.OPERS:
             if nextchar and curchar + nextchar in tokens.DOUBLE_OPERS:
-                result.append((tokens.T_DOOPER, curchar+nextchar))
+                result[cur].append((tokens.T_DOOPER, curchar+nextchar))
                 i += 2
             else:
-                result.append((tokens.T_OPER, curchar))
+                result[cur].append((tokens.T_OPER, curchar))
                 i += 1
         
         # LPRM | RPRM | LBRC | RBRC | LBRK | RBRK &&:check
         elif curchar in tokens.LRToToken:
-            result.append((tokens.LRToToken[curchar], curchar)) # ({LRToToken[curchar]} | {curchar})
+            result[cur].append((tokens.LRToToken[curchar], curchar)) # ({LRToToken[curchar]} | {curchar})
             i+=1
         
         elif curchar == "|":
             if nextchar == "|":
-                result.append((tokens.T_ORORTT, "||"))
+                result[cur].append((tokens.T_ORORTT, "||"))
                 i+=1
             else:
-                result.append((tokens.T_ORTT, "|"))
+                result[cur].append((tokens.T_ORTT, "|"))
             i+=1
         
         # Backslash check
@@ -144,7 +171,7 @@ def lmain(content: str):
                 errorsh.append(errors.BackslashError("Expected type after backslash.", curchar, i, curline, lines[curline]))
             elif not nextchar in tokens.BSLH_APPROVED:
                 print("Warning: unknown BSLHToken: ", nextchar)
-            result.append((tokens.T_BSLH, nextchar))
+            result[cur].append((tokens.T_BSLH, nextchar))
             i+=2
         
         # Double Symbols
@@ -154,18 +181,24 @@ def lmain(content: str):
                 DOUBLE = True
             if curchar == ".":
                 if DOUBLE:
-                    result.append((tokens.T_DODOT, ".."))
+                    result[cur].append((tokens.T_DODOT, ".."))
                     i+=2
                 else:
-                    result.append((tokens.T_DOT, "."))
+                    result[cur].append((tokens.T_DOT, "."))
                     i+=1
             else:
                 if DOUBLE:
-                    result.append((tokens.T_SCOPE, "::"))
+                    result[cur].append((tokens.T_SCOPE, "::"))
                     i+=2
                 else:
-                    result.append((tokens.T_DDOT, ":"))
+                    result[cur].append((tokens.T_DDOT, ":"))
                     i+=1
+        
+        # Semicolon
+        elif curchar == ";":
+            cur+=1
+            i+=1
+            result.append([])
         
         # Unknown character
         else:
@@ -175,3 +208,4 @@ def lmain(content: str):
 
     
     return (result, error, errorsh)
+    

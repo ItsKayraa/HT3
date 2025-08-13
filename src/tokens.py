@@ -5,7 +5,14 @@ Tokens are the things that is used for parser to parse."""
 ASCII_NUMBERS = "0123456789"
 ASCII_ALPHA   = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
 OPERS         = "*=-+/"
-double_opers  = ["**", "++", "--", "//", "+=", "-=", "*=", "/=", "=="]
+DOUBLE_OPERS  = ["**", "++", "--", "//", "+=", "-=", "*=", "/=", "=="]
+TYPES         = [
+    "str",
+    "int",
+    "list",
+    "float",
+    "char",
+]
 
 # Define token names.
 # -----------------
@@ -25,7 +32,6 @@ T_DOT    = "DOT" #   -> Dot (.)
 T_DODOT  = "DODOT" # -> Double Dot (..)
 T_DDOT   = "DDOT" #  -> : (Forgo its name)
 T_SCOPE  = "SCOPE" # -> Scope (::)
-T_SEMIC  = "SEMIC" # -> Semicolon (;)
 T_COMMA  = "COMMA" # -> Comma (,)
 T_LPRM   = "LPRM" #  -> Left Param ( ( )
 T_RPRM   = "RPRM" #  -> Right Param ( ) )
@@ -37,6 +43,12 @@ T_ORTT   = "ORTT" #  -> OR Token (|)
 T_BSLH   = "BSLH" #  -> Backslash Token (\)
 T_ORORTT = "ORORTT" #-> Double OR Token (||)
 T_UNOT   = "UNOT" #  -> !
+T_DOLLAR = "DOLLAR" #-> $
+T_AND    = "AND" #   -> &
+
+# these doesn't follows the comment align ;-;
+T_COMMENT_LINE = "COMMENT_LINE"
+T_COMMENT_BLOCK = "COMMENT_BLOCK"
 # -----------------
 #   BSLH Approved
 BSLH_APPROVED = [
@@ -73,6 +85,7 @@ LRToToken = {
     "(": T_LPRM,
     ")": T_RPRM,
     ",": T_COMMA,
-    ";": T_SEMIC,
-    "!": T_UNOT
+    "!": T_UNOT,
+    "$": T_DOLLAR,
+    "&": T_AND
 }

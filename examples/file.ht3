@@ -1,0 +1,7 @@
+func main() {
+    int num 0;
+    num++; # Makes num 1
+    num+=2; # Makes num 3
+    num-=2;
+    eret num;
+}
