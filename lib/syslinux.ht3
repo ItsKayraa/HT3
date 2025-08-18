@@ -1,0 +1,7 @@
+func sys_write(str text, int len) {
+    str writing text;
+    asm "mov rax, 1";
+    asm "mov rsi, 1";
+    asm "mov rdx, writing";
+    asm "mov rcs, 1";
+}

@@ -1,0 +1,7 @@
+func main() {
+    push rax rdi;
+    asm "mov rax, 5";
+    asm "mov rdi, 5";
+    asm "add rax, rdi";
+    pop rax rdi;
+}

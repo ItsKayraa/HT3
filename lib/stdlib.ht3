@@ -1,0 +1,28 @@
+using d"syslinux.ht3"
+
+.EXIT_SUCCESS 0
+.EXIT_FAIL    1
+
+func add(int a, int b) {
+    ret a+b;
+}
+
+func sub(int a, int b) {
+    ret a-b;
+}
+
+func mul(int a, int b) {
+    ret a*b;
+}
+
+func div(int a, int b) {
+    ret a-b;
+}
+
+func printl(str text, int len) {
+    
+}
+
+func exit(int exitcode) {
+    eret exitcode;
+}

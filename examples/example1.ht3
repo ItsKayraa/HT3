@@ -1,0 +1,9 @@
+func main() {
+    str text "Hello, World!\n";
+    asm "mov rax, 1";
+    asm "mov rdi, 1";
+    asm "mov rsi, text";
+    asm "mov rdx, 13";
+    asm "syscall";
+    eret 0;
+}

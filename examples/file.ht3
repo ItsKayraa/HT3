@@ -1,8 +1,0 @@
-get d"std.ht3";
-
-func main() {
-    int x 10;
-    int y 20;
-    intf result add(x, y);
-    eret result;
-}

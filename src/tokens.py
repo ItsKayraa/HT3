@@ -12,6 +12,8 @@ TYPES         = [
     "list",
     "float",
     "char",
+    "any",
+    "none"
 ]
 PARAM_REGS    = ["rdi", "rsi", "rdx", "rcx", "r8", "r9"]
 

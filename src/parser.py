@@ -66,13 +66,13 @@ def parser(tokens_nested: list, script_path):
             curt = tokens[i]
             ntex = tokens[i+1] if i+1 < len(tokens) else None
 
-            # print(curt, i, ntex) # <- debug
+            print(curt, i, ntex) # <- debug
 
             if curt[0] == tht.T_COMMENT_LINE or curt[0] == tht.T_COMMENT_BLOCK:
                     i += 1
                     continue
             elif curt[0] == tht.T_IDENT:
-                if curt[1] == "func":
+                if curt[1] == "func": # [FUNC]
                     if not ntex or ntex[0] != tht.T_IDENT:
                         print("Error: Invalid function usage")
                         return
@@ -114,13 +114,8 @@ def parser(tokens_nested: list, script_path):
                     i = plc
                     if tokens[i][0] == tht.T_LBRC:
                         curfunc = fnamet[1]
-                        i+=1
-                elif curt[1] == "printl":
-                    if not ntex or (ntex[0] != tht.T_IDENT or ntex[0] != tht.T_STRING):
-                        print("Error: Invalid printl usage: expected string or variable after printl.")
-                        return
-                    
-                elif curt[1] == "int":
+                        i+=1   
+                elif curt[1] == "int": # [INT]
                     if not ntex or ntex[0] != tht.T_IDENT:
                         print("Error: Invalid int usage")
                         return
@@ -138,7 +133,31 @@ def parser(tokens_nested: list, script_path):
                     asm["s.data"] += asmc + "\n"
                     cvars.append(namet[1])
                     i += 3
-                elif curt[1] == "intf":
+                elif curt[1] == "push":
+                    if curfunc == "" or len(tokens) == 1:
+                        print("Error: Expected to be in a function or push has invalid amount of arguements.")
+                        return
+                    willpush = []
+                    i+=1
+                    while i < len(tokens):
+                        willpush.append(tokens[i][1])
+                        i+=1
+                    for pushed in willpush:
+                        asm["funcs"][curfunc]["content"] += f"push {pushed}\n"
+                    break
+                elif curt[1] == "pop":
+                    if curfunc == "" or len(tokens) == 1:
+                        print("Error: Expected to be in a function or pop has invalid amount of arguements.")
+                        return
+                    willpush = []
+                    i+=1
+                    while i < len(tokens):
+                        willpush.append(tokens[i][1])
+                        i+=1
+                    for pushed in willpush:
+                        asm["funcs"][curfunc]["content"] += f"push {pushed}\n"
+                    break
+                elif curt[1] == "intf": # [INTF]
                     namet = ntex
                     if namet[0] != tht.T_IDENT:
                         print("Error: Invalid intf variable name")
@@ -175,7 +194,7 @@ def parser(tokens_nested: list, script_path):
                     asm["funcs"][curfunc]["content"] += f"mov [{namet[1]}], rax\n"
 
                     i = j
-                elif curt[1] == "str":
+                elif curt[1] == "str": # [STR]
                     if not ntex or ntex[0] != tht.T_IDENT:
                         print("Error: Invalid str usage")
                         return
@@ -185,15 +204,20 @@ def parser(tokens_nested: list, script_path):
                     if not namet or namet[0] != tht.T_IDENT:
                         print("Error: Invalid str usage: expected word name for str.")
                         return
-                    if not valuet or valuet[0] != tht.T_STRING:
+                    if not valuet or (valuet[0] != tht.T_STRING or (valuet[0] != tht.T_IDENT or (valuet[1] not in svars or valuet[1] not in asm["funcs"][curfunc]["params"]))):
                         print("Error: Invalid str usage: expected string value for str.")
                         return
-
-                    asmc = f'{namet[1]} db "{valuet[1]}"'
+                    if valuet[1] in svars:
+                        asm["s.data"] += f'{namet[1]} db\n'
+                        asm["funcs"][curfunc]["content"] += f"mov rdi, {valuet[1]}\n"
+                        asm["funcs"][curfunc]["content"] += f"mov rax, {namet[1]}\n"
+                        asm["funcs"][curfunc]["content"] += f"mov {namet[1]}, rax\n"
+                        continue
+                    asmc = f'{namet[1]} db "{valuet[1]}", 0'
                     asm["s.data"] += asmc + "\n"
                     svars.append(namet[1])
                     i += 3
-                elif curt[1] == "asm":
+                elif curt[1] == "asm": # [ASM]
                     if curfunc == "":
                         print("Error: Invalid asm usage: expected to be inside a function.")
                         return
@@ -201,20 +225,107 @@ def parser(tokens_nested: list, script_path):
                         print("Error: Invalid asm usage: expected string after asm.")
                         return
                     asm["funcs"][curfunc]["content"] += ntex[1] + "\n"
-                elif curt[1] == "eret":
+                    i+=2
+                elif curt[1] == "eret": # [ERET]
                     if curfunc == "":
-                        print("Error: Invalid eret usage: there is no current function.")
+                        print("Error: Invalid ret usage: there is no current function.")
                         return
                     if not ntex:
-                        print("Error: Invalid eret usage:expected return")
+                        print("Error: Invalid ret usage: expected return value")
                         return
-                    ecode = ntex[1]
-                    if ntex[1] == tht.T_IDENT:
-                        ecode = f"qword [{ntex[1]}]"
-                    asmc = f"mov rax, 60\nmov rdi, [{ecode}]\nsyscall\nret\n"
-                    asm["funcs"][curfunc]["content"] += asmc
-                    i+=2
-                elif curt[1] == "ret":
+
+                    def resolve_operand(tok):
+                        if tok[0] == tht.T_INT:
+                            return ('imm', tok[1])
+                        if tok[0] == tht.T_IDENT:
+                            name = tok[1]
+                            params = asm["funcs"][curfunc]["params"]
+                            if name in params:
+                                idx = list(params.keys()).index(name)
+                                return ('reg', tht.PARAM_REGS[idx])
+                            if name in cvars or name in svars:
+                                return ('mem', f"[{name}]")
+                            print(f"Error: unknown symbol '{name}' in return")
+                            return (None, None)
+                        print(f"Error: unsupported return token type: {tok}")
+                        return (None, None)
+                    j = i + 1
+                    lhs_tok = tokens[j]
+                    j += 1
+
+                    op_tok = None
+                    rhs_tok = None
+                    if j < len(tokens) and tokens[j][1] in ("+", "-", "*", "/"):
+                        op_tok = tokens[j][1]
+                        j += 1
+                        if j >= len(tokens):
+                            print("Error: incomplete binary expression in return")
+                            return
+                        rhs_tok = tokens[j]
+                        j += 1
+
+                    asm_code = ""
+
+                    if rhs_tok is None:
+                        kind, val = resolve_operand(lhs_tok)
+                        if kind is None:
+                            return
+                        if kind == 'reg':
+                            asm_code += f"mov rdi, {val}\n"
+                        elif kind == 'mem':
+                            asm_code += f"mov rdi, {val}\n"
+                        elif kind == 'imm':
+                            asm_code += f"mov rdi, {val}\n"
+                    else:
+                        k1, v1 = resolve_operand(lhs_tok)
+                        k2, v2 = resolve_operand(rhs_tok)
+                        if k1 is None or k2 is None:
+                            return
+                        if k1 == 'reg':
+                            asm_code += f"mov rdi, {v1}\n"
+                        elif k1 == 'mem':
+                            asm_code += f"mov rdi, {v1}\n"
+                        else:
+                            asm_code += f"mov rdi, {v1}\n"
+
+                        if op_tok == "+":
+                            if k2 == 'reg':
+                                asm_code += f"add rdi, {v2}\n"
+                            elif k2 == 'mem':
+                                asm_code += f"add rdi, {v2}\n"
+                            else:
+                                asm_code += f"add rdi, {v2}\n"
+                        elif op_tok == "-":
+                            if k2 == 'reg':
+                                asm_code += f"sub rdi, {v2}\n"
+                            elif k2 == 'mem':
+                                asm_code += f"sub rdi, {v2}\n"
+                            else:
+                                asm_code += f"sub rdi, {v2}\n"
+                        elif op_tok == "*":
+                            if k2 == 'reg':
+                                asm_code += f"imul rdi, {v2}\n"
+                            elif k2 == 'mem':
+                                asm_code += f"mov rdi, {v2}\nimul rdi, rbx\n"
+                            else:
+                                asm_code += f"imul rdi, {v2}\n"
+                        elif op_tok == "/":
+                            if k2 == 'reg':
+                                asm_code += f"mov rbx, {v2}\n"
+                            elif k2 == 'mem':
+                                asm_code += f"mov rbx, {v2}\n"
+                            else:
+                                asm_code += f"mov rbx, {v2}\n"
+                            asm_code += "xor rdx, rdx\n"
+                            asm_code += "div rbx\n"
+                        else:
+                            print(f"Error: unsupported operator '{op_tok}'")
+                            return
+
+                    asm_code += "mov rax, 60\nsyscall\n"
+                    asm["funcs"][curfunc]["content"] += asm_code
+                    i = j
+                elif curt[1] == "ret": # [RET]
                     if curfunc == "":
                         print("Error: Invalid ret usage: there is no current function.")
                         return
@@ -313,7 +424,7 @@ def parser(tokens_nested: list, script_path):
                     asm_code += "ret\n"
                     asm["funcs"][curfunc]["content"] += asm_code
                     i = j
-                elif curt[1] == "get":
+                elif curt[1] == "using": # [USING]
                     if not ntex or (ntex[0] != tht.T_STRING and ntex[0] != tht.T_IDENT):
                         print("Error: expected string library name after get or d and string")
                         return
@@ -427,35 +538,57 @@ def parser(tokens_nested: list, script_path):
                                     asm["funcs"][curfunc]["content"] += f"push rax\npush rdx\nmov rax, [{curt[1]}]\nxor rdx, rdx\nmov rbx, {len(valt[1])}\ndiv rbx\nmov [{curt[1]}], rax\npop rdx\npop rax\n"
                                 i+=1
                             i+=2
-                        else:
-                            if curt[1] in asm["funcs"]:
-                                func_name = curt[1]
+                    elif curt[1] in asm["funcs"]:
+                        func_name = curt[1]
 
-                                args = []
-                                j = i + 1
-                                if j < len(tokens) and tokens[j][0] == tht.T_LPRM:
+                        args = []
+                        j = i + 1
+                        if j < len(tokens) and tokens[j][0] == tht.T_LPRM:
+                            j += 1
+                            while j < len(tokens) and tokens[j][0] != tht.T_RPRM:
+                                t = tokens[j]
+                                if t[0] == tht.T_INT:
+                                    args.append({"type": "imm", "value": t[1]})
+                                elif t[0] == tht.T_IDENT:
+                                    if t[1] in cvars or t[1] in svars:
+                                        args.append({"type": "var", "value": t[1]})
+                                    else:
+                                        print(f"Error: Unknown variable '{t[1]}' used as argument")
+                                        return
+                                j += 1
+                                if j < len(tokens) and tokens[j][0] == tht.T_COMMA:
                                     j += 1
-                                    while j < len(tokens) and tokens[j][0] != tht.T_RPRM:
-                                        t = tokens[j]
-                                        if t[0] == tht.T_INT:
-                                            args.append({"type": "imm", "value": t[1]})
-                                        elif t[0] == tht.T_IDENT:
-                                            if t[1] in cvars or t[1] in svars:
-                                                args.append({"type": "var", "value": t[1]})
-                                            else:
-                                                print(f"Error: Unknown variable '{t[1]}' used as argument")
-                                                return
-                                        j += 1
-                                        if j < len(tokens) and tokens[j][0] == tht.T_COMMA:
-                                            j += 1
-                                    j += 1
+                            j += 1
 
-                                generate_func_call(asm, curfunc, func_name, args)
+                        generate_func_call(asm, curfunc, func_name, args)
 
-                                i = j
-                            else:
-                                print(f"Error: Unknown keyword: {curt[1]}")
-                                return
+                        i = j
+                    elif curt[1] in svars:
+                        if not ntex:
+                            print("Error: Unused variable name.")
+                            return
+                        if curfunc == "":
+                            print("Error: expected to be in a function.")
+                        match ntex[0]:
+                            case tht.T_LBRK:
+                                if not tokens[i+2]:
+                                    print("Error: Unused '['")
+                                    return
+                                if tokens[i+2] in cvars:
+                                    asm["funcs"][curfunc]["content"] += (
+                                        f"mov rax, [{tokens[i+2][1]}]\n"
+                                        f"mov rdi, [{curt[1]}]\n"
+                                        "add rdi, rax\n"
+                                        "mov al, byte [rdi]\n"
+                                        "mov [c], al\n"
+                                    )
+                                    
+                                elif tokens[i+2] in tokens[i+2] in asm["funcs"][curfunc]["params"]:
+                                    params = asm["funcs"][curfunc]["params"]
+                                    idx = list(params.keys()).index(tokens[i+2])
+                    else:
+                        print(f"Error: Unknown keyword: {curt[1]}")
+                        return
             elif curt[0] == tht.T_RBRC:
                 if curfunc == "":
                     print("Error: Invalid right bracket usage: there is no current work.")
